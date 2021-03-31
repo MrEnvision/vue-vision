@@ -221,3 +221,20 @@ DELETE")
 
 
 # 前段开发
+
+## 1. 全局挂载Echarts
+
+- 安装echarts `npm i echarts -S`
+- 在 `src/main.js` 文件中引入并将其挂载到 Vue 的原型对象上
+
+```js
+import * as echarts from 'echarts';
+
+// 将全局echarts对象挂载到Vue的原型对象上 
+Vue.prototype.$echarts = echarts
+```
+
+- 在别的组件中直接通过`this.$echarts`即可使用
+
+
+
