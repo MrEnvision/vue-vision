@@ -8,7 +8,27 @@
 
 
 
-# 后端
+# 项目启动
+
+## 1. 后端项目
+
+```shell
+cd koa_serve
+npm install
+node app.js
+```
+
+## 2. 前端项目
+
+```shell
+cd vision_project
+npm install
+npm run serve
+```
+
+
+
+# 后端开发
 
 ## 1. KOA2介绍
 
@@ -109,3 +129,95 @@ app.listen(3000)
 
 <img src="./note/img/后台开发.png" style="zoom:50%;" />
 
+**响应中间件开发**
+
+```js
+module.exports = async (ctx, next) => {
+  // 记录开始的时间
+  const start = Date.now()
+  // 让内层中间件执行
+  await next()
+  // 记录结束的时间
+  const end = Date.now()
+  // 计算响应时间
+  const duration = end - start
+  // 设置响应头
+  ctx.set("X-Response-Time", duration + "ms")
+}
+```
+
+**响应头中间件**
+
+```js
+module.exports = async (ctx, next) => {
+  ctx.set("Content-Type", "application/json; charset=utf-8")
+  ctx.set("Access-Control-Allow-Origin", "*")
+  ctx.set("Access-Control-Allow-Methods", "OPTIONS, GET, PUT, POST, DELETE")
+  ctx.response.body = "{'success': true}"
+  await next()
+}
+```
+
+**业务逻辑中间件**
+
+```js
+const path = require("path")
+const fileUtils = require("../utils/file_utils")
+
+module.exports = async (ctx, next) => {
+  // 获取请求路径
+  const url = ctx.request.url;
+  // 转化为文件路径
+  const filePath = "../data" + url.replace("/api", "") + ".json"
+  // 转化为绝对路径
+  const finalPath = path.join(__dirname, filePath)
+  // 获取数据并设置响应体
+  try {
+    ctx.response.body = await fileUtils.getFileJsonData(finalPath)
+  } catch (error) {
+    ctx.response.body = JSON.stringify({
+      message: "读取文件失败！",
+      status: 404
+    })
+  }
+  await next()
+}
+```
+
+**文件读取**
+
+```js
+// 读取文件的工具方法
+const fs = require('fs')
+
+module.exports.getFileJsonData = (filePath) => {
+  // 根据文件的路径, 读取文件的内容
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, 'utf-8', (error, data) => {
+      if(error) {
+        // 读取文件失败
+        reject(error)
+      } else {
+        // 读取文件成功
+        resolve(data)
+      }
+    })
+  })
+}
+```
+
+**跨域设置**
+
+```js
+// 设置响应头
+app.use(async (ctx, next) => {
+    ctx.set("Access-Control-Allow-Origin", "*")
+    ctx.set("Access-Control-Allow-Methods", "OPTIONS, GET, PUT, POST,
+DELETE")
+    await next();
+})
+```
+
+
+
+# 前段开发
