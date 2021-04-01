@@ -236,5 +236,81 @@ Vue.prototype.$echarts = echarts
 
 - 在别的组件中直接通过`this.$echarts`即可使用
 
+## 2. 组件开发流程
+
+- 组件结构的设计
+  - A组件为针对路由路径而显示的文件，其中引入了B组件
+  - B组件是真正显示图表的
+- 布局结构的设计
+  - CSS样式设置
+- 基本图表的实现
+  - initChart（初始化实例对象）
+  - getData（获取数据）
+  - updateData（即设置option）
+
+```vue
+<template>
+  <div class="seller-wrap com-container">
+    seller
+    <div ref="seller" class="seller-chart com-chart"></div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'Seller',
+  data () {
+    return {
+      chartInstance: null
+    }
+  },
+  mounted () {
+    this.initChart()
+    this.getData()
+  },
+  methods: {
+    // 初始化Echarts实例对象
+    initChart () {
+      this.chartInstance = this.$echarts.init(this.$refs.seller)
+    },
+    // 获取数据
+    async getData () {
+      // 前面axios已经挂载在main.js上,即全局,可直接使用this.$http
+      const res = await this.$http.get('seller')
+      if (res.status === 200) {
+        this.updateData(res.data)
+      }
+    },
+    // 更新数据
+    updateData (data) {
+      const option = {
+        // ....
+      }
+      this.chartInstance.setOption(option)
+    }
+  }
+}
+</script>
+```
+
+- 动态刷新的实现
+  - 根据实际需求采用不同的方法（一般采用定时器）
+
+- 界面样式的调整
+- 拆分图表option
+  - 初始化配置option
+  - 获取数据之后的dataOption
+  - 分辨率适配的updatOption
+- 分辨率适配
+  - 监听窗口大小变化事件
+
+```js
+export default {
+  mounted () {
+    window.addEventListener('resize', this.handlerResize)
+  }
+}
+```
+
 
 
