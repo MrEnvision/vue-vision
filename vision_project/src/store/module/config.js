@@ -8,7 +8,8 @@ const state = {
     sellerTitle: '▎商家销售量统计',
     mapTitle: '▎商家分布',
     rankTitle: '▎地区销售排行',
-    hotTitle: '▎热销商品占比'
+    hotTitle: '▎热销商品占比',
+    stockTitle: '▎库存和销量分析'
   },
   // 半透明的颜色值
   colorArr1: [
