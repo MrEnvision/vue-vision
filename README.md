@@ -312,5 +312,65 @@ export default {
 }
 ```
 
+**综上，公共流程如下：**
+
+```vue
+<template>
+<div class="com-container">
+  <div ref="dom" class="com-chart"></div>
+  </div>
+</template>
+
+<script>
+  export default {
+    name: 'Demo',
+    data () {
+      return {
+        chartInstance: null,
+        data: null
+      }
+    },
+    mounted () {
+      this.initChart()
+      this.getData()
+      window.addEventListener('resize', this.handlerResize)
+      this.handlerResize()
+    },
+    destroyed () {
+      window.removeEventListener('resize', this.handlerResize)
+    },
+    methods: {
+      // 初始化
+      initChart () {
+        this.chartInstance = this.$echarts.init(this.$refs.dom)
+        const initOption = {}
+        this.chartInstance.setOption(initOption)
+      },
+      // 获取数据
+      async getData () {
+        const res = await this.$http.get(...)
+        if (res && res.status === 200) {
+          this.data = res.data
+          this.updateData()
+        }
+      },
+      // 更新数据
+      updateData () {
+        const dataOption = {}
+        this.chartInstance.setOption(dataOption)
+      },
+      // 分辨率适配
+      handlerResize () {
+        const adapterOption = {}
+        this.chartInstance.setOption(adapterOption)
+        this.chartInstance.resize()
+      }
+    }
+  }
+</script>
+
+<style lang='less' scoped></style>
+```
+
 
 
