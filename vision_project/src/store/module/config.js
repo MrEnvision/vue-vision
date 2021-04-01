@@ -6,7 +6,8 @@ Vue.use(Vuex)
 const state = {
   title: {
     sellerTitle: '▎商家销售量统计',
-    mapTitle: '▎商家分布'
+    mapTitle: '▎商家分布',
+    rankTitle: '▎地区销售排行'
   },
   // 半透明的颜色值
   colorArr1: [

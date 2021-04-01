@@ -1,11 +1,15 @@
 <template>
   <div class="com-page">
+    <Rank/>
   </div>
 </template>
 
 <script>
+import Rank from '../components/Rank'
+
 export default {
-  name: 'RankPage'
+  name: 'RankPage',
+  components: { Rank }
 }
 </script>
 
