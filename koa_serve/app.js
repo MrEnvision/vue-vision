@@ -15,6 +15,9 @@ app.use(respHeaderMiddleware)
 const respDataMiddleware = require("./middleware/koa_response_data")
 app.use(respDataMiddleware)
 
-
 // 3.绑定端口号 8888
 app.listen(8888)
+
+// 4.websocket引入并开启服务端监听
+const webSocketService = require('./service/web_socket_service')
+webSocketService.listen()

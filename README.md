@@ -372,5 +372,40 @@ export default {
 <style lang='less' scoped></style>
 ```
 
+# WebSocket引入
 
+> 可以保持着浏览器和客户端之间的长连接， 通过 可以实现数据由后端推送到前 端，保证了数据传输的实时性.  **非常重要！！！**
 
+- 安装 WebSocket 包 —— `npm i ws -S`
+- 创建 WebSocket 实例对象
+- 监听事件
+
+```js
+// 后端
+const WebSocket = require("ws") // 创建出WebSocket实例对象
+const wss = new WebSocket.Server({ 
+  port: 9998 
+})
+wss.on("connection", client => { 
+  console.log("有客户端连接...") 
+  client.on("message", msg => {
+    console.log("客户端发送数据过来了")
+    client.send('hello socket')  // 发送数据给客户端 
+  }) 
+})
+```
+
+```js
+// 前端（WebSocket是window对象提供，不需要额外包）
+const ws = new WebSocket('ws://localhost:9998') // 服务器地址
+ws.onopen = () => {
+  console.log('连接服务器成功') 
+}
+ws.onmessage = msg => {
+  console.log('从服务器接收到了数据')
+  // msg.data
+}
+ws.onclose = e => { 
+  console.log('服务器关闭了连接') 
+} 
+```
