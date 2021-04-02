@@ -25,6 +25,10 @@ export default {
       titleFontSize: 0
     }
   },
+  created () {
+    // 注册回调函数
+    this.$socket.registerCallBack('trendData', this.getData)
+  },
   computed: {
     selectTypes () {
       if (!this.data) {
@@ -63,12 +67,19 @@ export default {
   },
   mounted () {
     this.initChart()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'trendData',
+      chartName: 'trend',
+      value: ''
+    })
+    // this.getData()
     window.addEventListener('resize', this.handlerResize)
     this.handlerResize() // 第一次主动处理
   },
   destroyed () {
     window.removeEventListener('resize', this.handlerResize)
+    this.$socket.unRegisterCallBack('trendData')
   },
   methods: {
     // 初始化
@@ -101,12 +112,15 @@ export default {
       this.chartInstance.setOption(initOption)
     },
     // 获取数据
-    async getData () {
-      const res = await this.$http.get('trend')
-      if (res && res.status === 200) {
-        this.data = res.data
-        this.updateData()
-      }
+    getData (res) {
+      console.log(res)
+      // const res = await this.$http.get('trend')
+      // if (res && res.status === 200) {
+      //   this.data = res.data
+      //   this.updateData()
+      // }
+      this.data = res
+      this.updateData()
     },
     // 更新数据
     updateData () {

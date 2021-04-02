@@ -6,6 +6,13 @@ import * as echarts from 'echarts'
 import axios from 'axios'
 
 import './assets/theme/chalk'
+import './assets/theme/vintage'
+
+import SocketService from './utils/scoket_service'
+
+SocketService.Instance.connect()
+// 将socket对象挂载到Vue的原型对象上
+Vue.prototype.$socket = SocketService.Instance
 
 // 将全局echarts对象挂载到Vue的原型对象上
 Vue.prototype.$echarts = echarts
