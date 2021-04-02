@@ -1,5 +1,4 @@
 // 计算服务器消耗时长的中间件
-
 module.exports = async (ctx, next) => {
   // 记录开始的时间
   const start = Date.now()

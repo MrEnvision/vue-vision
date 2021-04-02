@@ -1,3 +1,4 @@
+// websocket 服务
 const path = require('path')
 const fileUtils = require('../utils/file_utils')
 
@@ -15,15 +16,12 @@ module.exports.listen = () => {
     console.log('有客户端连接成功了!')
     // 对客户端发送信息进行监听
     client.on('message', async msg => {
+      console.log('客户端发送数据给服务端了: ' + msg)
       const payload = JSON.parse(msg)
       const action = payload.action
       if (action === 'getData') {
-        // let filePath = '../data/' + payload.chartName + '.json'
-        // payload.chartName // trend seller map rank hot stock
         const filePath = path.join(__dirname, '../data/' + payload.chartName + '.json')
-        // 获取图表数据
-        // const filePath = path.join(_dirname, '../data/' + payload.chartName + '.json')
-        payload.data = await fileUtils.getFileJsonData(filePath)
+        payload.data = await fileUtils.getFileJsonData(filePath) // 获取图表数据
         // 发送数据给客户端
         client.send(JSON.stringify(payload))
       } else {
