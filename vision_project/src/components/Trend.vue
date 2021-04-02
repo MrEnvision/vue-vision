@@ -113,7 +113,6 @@ export default {
     },
     // 获取数据
     getData (res) {
-      console.log(res)
       // const res = await this.$http.get('trend')
       // if (res && res.status === 200) {
       //   this.data = res.data

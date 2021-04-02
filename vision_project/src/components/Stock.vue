@@ -15,14 +15,23 @@ export default {
       timer: null
     }
   },
+  created () {
+    this.$socket.registerCallBack('stockData', this.getData)
+  },
   mounted () {
     this.initChart()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'stockData',
+      chartName: 'stock',
+      value: ''
+    })
     window.addEventListener('resize', this.handlerResize)
     this.handlerResize() // 第一次主动处理
   },
   destroyed () {
     window.removeEventListener('resize', this.handlerResize)
+    this.$socket.unRegisterCallBack('stockData')
   },
   methods: {
     // 初始化
@@ -45,13 +54,10 @@ export default {
       })
     },
     // 获取数据
-    async getData () {
-      const res = await this.$http.get('stock')
-      if (res && res.status === 200) {
-        this.data = res.data
-        this.updateData()
-        this.startInterval()
-      }
+    getData (res) {
+      this.data = res
+      this.updateData()
+      this.startInterval()
     },
     // 更新数据
     updateData () {

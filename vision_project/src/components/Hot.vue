@@ -39,14 +39,23 @@ export default {
       }
     }
   },
+  created () {
+    this.$socket.registerCallBack('hotData', this.getData)
+  },
   mounted () {
     this.initChart()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'hotData',
+      chartName: 'hot',
+      value: ''
+    })
     window.addEventListener('resize', this.handlerResize)
     this.handlerResize() // 第一次主动处理
   },
   destroyed () {
     window.removeEventListener('resize', this.handlerResize)
+    this.$socket.unRegisterCallBack('hotData')
   },
   methods: {
     // 初始化
@@ -101,12 +110,9 @@ export default {
       this.chartInstance.setOption(initOption)
     },
     // 获取数据
-    async getData () {
-      const res = await this.$http.get('hot')
-      if (res && res.status === 200) {
-        this.data = res.data
-        this.updateData()
-      }
+    getData (res) {
+      this.data = res
+      this.updateData()
     },
     // 更新数据
     updateData () {

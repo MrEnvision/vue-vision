@@ -16,15 +16,24 @@ export default {
       endValue: 9 // 区域缩放的终点值
     }
   },
+  created () {
+    this.$socket.registerCallBack('rankData', this.getData)
+  },
   mounted () {
     this.initChart()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'rankData',
+      chartName: 'rank',
+      value: ''
+    })
     window.addEventListener('resize', this.handlerResize)
     this.handlerResize()
   },
   destroyed () {
     window.removeEventListener('resize', this.handlerResize)
     clearInterval(this.timer)
+    this.$socket.unRegisterCallBack('rankData')
   },
   methods: {
     initChart () {
@@ -64,17 +73,13 @@ export default {
         this.startInterval()
       })
     },
-    async getData () {
-      const res = await this.$http.get('rank')
-      if (res && res.status === 200) {
-        const data = res.data
-        data.sort((a, b) => {
-          return b.value - a.value
-        })
-        this.data = data
-        this.updateChart()
-        this.startInterval()
-      }
+    getData (res) {
+      res.sort((a, b) => {
+        return b.value - a.value
+      })
+      this.data = res
+      this.updateChart()
+      this.startInterval()
     },
     updateChart () {
       const provinceArr = this.data.map(item => item.name)

@@ -41,6 +41,7 @@ export default class SocketService {
 
     // 连接服务端失败 或 当连接成功之后服务器关闭的情况
     this.ws.onclose = () => {
+      console.log('连接服务端失败')
       this.connected = false
       this.connectRetryCount++
       setTimeout(() => {
@@ -50,8 +51,10 @@ export default class SocketService {
 
     // 得到服务端发送过来的数据
     this.ws.onmessage = msg => {
+      console.log('从服务端获取到了数据')
       const recvData = JSON.parse(msg.data)
       const socketType = recvData.socketType
+      // 判断回调函数是否注册
       if (this.callBackMapping[socketType]) {
         const action = recvData.action
         if (action === 'getData') {

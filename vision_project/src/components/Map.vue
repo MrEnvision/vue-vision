@@ -16,17 +16,26 @@ export default {
       mapDate: {} // 所获取的地图省份数据，缓存之用，防止重复请求获取
     }
   },
+  created () {
+    this.$socket.registerCallBack('mapData', this.getData)
+  },
   mounted () {
     this.initChart()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'mapData',
+      chartName: 'map',
+      value: ''
+    })
     window.addEventListener('resize', this.handlerResize)
     this.handlerResize()
   },
   destroyed () {
     window.removeEventListener('resize', this.handlerResize)
+    this.$socket.unRegisterCallBack('mapData')
   },
   methods: {
-    initChart: async function () {
+    async initChart () {
       this.chartInstance = this.$echarts.init(this.$refs.map, 'chalk')
       const res = await this.$http.get('map/china')
       if (res && res.status === 200) {
@@ -57,6 +66,9 @@ export default {
         // 地图点击事件
         this.chartInstance.on('click', async (arg) => {
           const province = getProvinceMapInfo(arg.name)
+          if (!province) {
+            return false
+          }
           let provinceData
           if (this.mapDate[province.key]) {
             provinceData = this.mapDate[province.key]
@@ -75,12 +87,9 @@ export default {
         })
       }
     },
-    async getData () {
-      const res = await this.$http.get('map')
-      if (res && res.status === 200) {
-        this.data = res.data
-        this.updateChart()
-      }
+    getData (res) {
+      this.data = res
+      this.updateChart()
     },
     updateChart () {
       const legendArr = this.data.map(item => item.name)

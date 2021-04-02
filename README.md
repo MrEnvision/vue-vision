@@ -420,6 +420,122 @@ ws.onclose = e => {
 
 ### 3.1 创建 socket_service.js 文件
 
+基础流程：
+
+- 定义类 SocketService，并设计单例模式
+- 创建websocket对象
+- 定义连接服务器方法，并在main.js中调用
+- 监听事件 - onopen、onmessage、onclose
+- 定义存储回调函数对象、注册回调函数方法、删除回调函数方法
+- 接受数据处理：onmessage中调用之前注册的回调函数
+- 定义发送数据的方法
+- 将SocketService对象挂在到Vue原型对象上，方便在组建中直接使用相关方法
+
+优化机制：
+
+- 发送数据需要判断是否连接，如果未连接则要进行轮询
+
+```js
+// 单例模式
+export default class SocketService {
+  static instance = null
+
+  static get Instance () {
+    if (!this.instance) {
+      this.instance = new SocketService()
+    }
+    return this.instance
+  }
+
+  // 和服务端连接的socket对象
+  ws = null
+
+  // 存储回调函数
+  callBackMapping = {}
+
+  // 标识是否连接成功
+  connected = false
+
+  // 记录重试的次数
+  sendRetryCount = 0
+
+  // 重新连接尝试的次数
+  connectRetryCount = 0
+
+  // 定义连接服务器的方法
+  connect () {
+    if (!window.WebSocket) {
+      return console.log('您的浏览器不支持WebSocket!')
+    }
+    this.ws = new WebSocket('ws://localhost:9999')
+
+    // 连接成功的事件
+    this.ws.onopen = () => {
+      console.log('连接服务端成功了')
+      this.connected = true
+      // 重置重新连接的次数
+      this.connectRetryCount = 0
+    }
+
+    // 连接服务端失败 或 当连接成功之后服务器关闭的情况
+    this.ws.onclose = () => {
+      console.log('连接服务端失败')
+      this.connected = false
+      this.connectRetryCount++
+      setTimeout(() => {
+        this.connect()
+      }, 500 * this.connectRetryCount)
+    }
+
+    // 得到服务端发送过来的数据
+    this.ws.onmessage = msg => {
+      console.log('从服务端获取到了数据')
+      const recvData = JSON.parse(msg.data)
+      const socketType = recvData.socketType
+      // 判断回调函数是否注册
+      if (this.callBackMapping[socketType]) {
+        const action = recvData.action
+        if (action === 'getData') {
+          const realData = JSON.parse(recvData.data)
+          this.callBackMapping[socketType].call(this, realData)
+        } else if (action === 'fullScreen') {
+          this.callBackMapping[socketType].call(this, recvData)
+        } else if (action === 'themeChange') {
+          this.callBackMapping[socketType].call(this, recvData)
+        }
+      }
+    }
+  }
+
+  // 回调函数的注册
+  registerCallBack (socketType, callBack) {
+    this.callBackMapping[socketType] = callBack
+  }
+
+  // 取消某一个回调函数
+  unRegisterCallBack (socketType) {
+    this.callBackMapping[socketType] = null
+  }
+
+  // 发送数据的方法
+  send (data) {
+    // 判断此时此刻有没有连接成功
+    if (this.connected) {
+      this.sendRetryCount = 0
+      this.ws.send(JSON.stringify(data))
+    } else {
+      this.sendRetryCount++
+      setTimeout(() => {
+        this.send(data)
+      }, this.sendRetryCount * 500)
+    }
+  }
+}
+```
+
 ### 3.2 组件改造
 
-### 3.3 优化机制
+- created - 注册回调函数
+- destoryed - 取消回调函数
+- 原本获取数据地方改为websocket发送数据
+

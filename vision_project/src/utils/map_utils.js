@@ -36,9 +36,13 @@ const name2pinyin = {
 }
 
 export function getProvinceMapInfo (arg) {
-  const path = `map/province/${name2pinyin[arg]}`
-  return {
-    key: name2pinyin[arg],
-    path: path
+  if (name2pinyin[arg]) {
+    const path = `map/province/${name2pinyin[arg]}`
+    return {
+      key: name2pinyin[arg],
+      path: path
+    }
+  } else {
+    return null
   }
 }

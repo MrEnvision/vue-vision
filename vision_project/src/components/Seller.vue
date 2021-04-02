@@ -16,15 +16,24 @@ export default {
       timer: null
     }
   },
+  created () {
+    this.$socket.registerCallBack('sellerData', this.getData)
+  },
   mounted () {
     this.initChart()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'sellerData',
+      chartName: 'seller',
+      value: ''
+    })
     window.addEventListener('resize', this.handlerResize)
     this.handlerResize() // 在页面加载完成的时候, 主动进行屏幕的适配
   },
   destroyed () {
     clearInterval(this.timer)
     window.removeEventListener('resize', this.handlerResize)
+    this.$socket.unRegisterCallBack('sellerData')
   },
   methods: {
     // 初始化Echarts实例对象
@@ -95,19 +104,14 @@ export default {
       })
     },
     // 获取数据
-    async getData () {
-      // 前面axios已经挂载在main.js上,即全局,可直接使用this.$http
-      const res = await this.$http.get('seller')
-      if (res && res.status === 200) {
-        const data = res.data
-        data.sort((a, b) => {
-          return a.value - b.value
-        })
-        this.data = data
-        this.totalPage = Math.ceil(data.length / 5)
-        this.updateData()
-        this.startInterval()
-      }
+    getData (res) {
+      res.sort((a, b) => {
+        return a.value - b.value
+      })
+      this.data = res
+      this.totalPage = Math.ceil(res.length / 5)
+      this.updateData()
+      this.startInterval()
     },
     // 更新数据
     updateData () {
