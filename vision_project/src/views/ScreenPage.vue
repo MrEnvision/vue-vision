@@ -10,7 +10,7 @@
       <span class="title">电商平台实时监控系统</span>
       <div class="title-right">
         <img :src="themeSrc" class="change" @click="handleChangeTheme" alt="">
-        <span class="datetime">{{ time }}</span>
+        <span class="datetime">{{ time | formatTime }}</span>
       </div>
     </header>
     <div class="screen-body">
@@ -83,6 +83,11 @@ import Trend from '../components/Trend'
 import { getThemeValue } from '../utils/theme_util'
 import { mapState } from 'vuex'
 
+// 创建一个函数来增加月日时小于10在前面加0
+const completeDate = function (value) {
+  return value < 10 ? '0' + value : value
+}
+
 export default {
   name: 'ScreenPage',
   components: {
@@ -95,7 +100,7 @@ export default {
   },
   data () {
     return {
-      time: '2049-01-01 00:00:00',
+      time: new Date().getTime(),
       // 定义每一个图表的全屏状态
       fullScreenStatus: {
         trend: false,
@@ -104,7 +109,8 @@ export default {
         rank: false,
         hot: false,
         stock: false
-      }
+      },
+      timer: null
     }
   },
   computed: {
@@ -122,11 +128,26 @@ export default {
       }
     }
   },
+  filters: {
+    formatTime: (value) => {
+      // 创建一个时间日期对象
+      const date = new Date(value)
+      // 返回格式化后的日期
+      return `${date.getFullYear()}-${completeDate(date.getMonth() + 1)}-${completeDate(date.getDate())}  ${completeDate(date.getHours())}:${completeDate(date.getMinutes())}`
+    }
+  },
   created () {
     this.$socket.registerCallBack('themeChange', this.recvThemeChange)
   },
+  mounted () {
+    const that = this
+    this.timer = setInterval(() => {
+      that.time = new Date().getTime()
+    }, 30000)
+  },
   destroyed () {
     this.$socket.unRegisterCallBack('themeChange')
+    clearInterval(this.timer)
   },
   methods: {
     // 发送切换主题信息
