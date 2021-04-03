@@ -6,6 +6,8 @@
 
 <script>
 import { getProvinceMapInfo } from '../utils/map_utils'
+import { getConfig } from '../utils/config_utils'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Map',
@@ -16,11 +18,26 @@ export default {
       mapDate: {} // 所获取的地图省份数据，缓存之用，防止重复请求获取
     }
   },
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme: {
+      handler (newVale) {
+        // 先销毁图表
+        this.chartInstance.dispose()
+        // 重新初始化图表
+        this.initChart(newVale)
+        this.updateData()
+        this.handlerResize()
+      }
+    }
+  },
   created () {
     this.$socket.registerCallBack('mapData', this.getData)
   },
   mounted () {
-    this.initChart()
+    this.initChart(this.theme)
     this.$socket.send({
       action: 'getData',
       socketType: 'mapData',
@@ -35,16 +52,17 @@ export default {
     this.$socket.unRegisterCallBack('mapData')
   },
   methods: {
-    async initChart () {
-      this.chartInstance = this.$echarts.init(this.$refs.map, 'chalk')
+    // 初始化
+    async initChart (theme) {
+      this.chartInstance = this.$echarts.init(this.$refs.map, theme)
       const res = await this.$http.get('map/china')
       if (res && res.status === 200) {
         this.$echarts.registerMap('china', res.data)
         const initOption = {
           title: {
-            text: this.$store.state.config.title.mapTitle,
-            left: 20,
-            top: 20
+            text: '▎商家分布',
+            left: getConfig('title').left,
+            top: getConfig('title').top
           },
           geo: {
             type: 'map',
@@ -87,11 +105,13 @@ export default {
         })
       }
     },
+    // 获取数据
     getData (res) {
       this.data = res
-      this.updateChart()
+      this.updateData()
     },
-    updateChart () {
+    // 更新数据
+    updateData () {
       const legendArr = this.data.map(item => item.name)
       const seriesArr = this.data.map(item => {
         return {
@@ -113,6 +133,7 @@ export default {
       }
       this.chartInstance.setOption(dataOption)
     },
+    // 分辨率适配
     handlerResize () {
       const titleFontSize = this.$refs.map.offsetWidth / 100 * 3.6
       const adapterOption = {
@@ -126,7 +147,7 @@ export default {
           itemHeight: titleFontSize / 2,
           itemGap: titleFontSize / 2,
           textStyle: {
-            fontSize: titleFontSize / 2
+            fontSize: titleFontSize / 1.2
           }
         }
       }
@@ -144,4 +165,4 @@ export default {
 }
 </script>
 
-<style lang='less' scoped></style>
+<style lang="scss" scoped></style>

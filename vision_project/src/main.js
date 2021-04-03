@@ -4,7 +4,9 @@ import router from './router'
 import store from './store'
 import * as echarts from 'echarts'
 import axios from 'axios'
-
+// 引入字体的文件
+import './assets/font/iconfont.css'
+// 引入图表主题文件
 import './assets/theme/chalk'
 import './assets/theme/vintage'
 

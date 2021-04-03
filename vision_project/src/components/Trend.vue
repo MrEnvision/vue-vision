@@ -1,9 +1,9 @@
 <template>
   <div class="com-container">
-    <div class="title" :style="comStyle1">
-      <span>{{ '▎' + showTitle + ' ' }}</span>
-      <span class="iconfont title-icon" :style="comStyle2" @click="showChoice = !showChoice"></span>
-      <div class="select-con" v-show="showChoice" :style="marginStyle">
+    <div class="title" :style="[fontStyle, colorStyle]">
+      <span style="margin-bottom: 5px;display: inline-block">{{ '▎' + showTitle + ' ' }}</span>
+      <span class="iconfont title-icon" :style="[fontStyle]" @click="showChoice = !showChoice">&#xe6eb;</span>
+      <div class="select-con" v-show="showChoice" :style="[marginStyle]">
         <div class="select-item" v-for="item in selectTypes" :key="item.key" @click="handleSelect(item.key)">
           {{ item.text }}
         </div>
@@ -14,6 +14,10 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+import { getConfig } from '../utils/config_utils'
+import { getThemeValue } from '../utils/theme_util'
+
 export default {
   name: 'Trend',
   data () {
@@ -25,11 +29,8 @@ export default {
       titleFontSize: 0
     }
   },
-  created () {
-    // 注册回调函数
-    this.$socket.registerCallBack('trendData', this.getData)
-  },
   computed: {
+    ...mapState(['theme']),
     selectTypes () {
       if (!this.data) {
         return []
@@ -39,24 +40,21 @@ export default {
         })
       }
     },
+    fontStyle () {
+      return {
+        fontSize: this.titleFontSize + 'px'
+      }
+    },
+    colorStyle () {
+      return {
+        color: getThemeValue(this.theme).titleColor
+      }
+    },
     showTitle () {
       if (!this.data) {
         return ''
       } else {
         return this.data[this.choiceType].title
-      }
-    },
-    // 设置给标题的样式
-    comStyle1 () {
-      return {
-        fontSize: this.titleFontSize + 'px'
-      }
-    },
-    comStyle2 () {
-      return {
-        width: this.titleFontSize * 0.75 + 'px',
-        height: this.titleFontSize * 0.75 + 'px',
-        marginBottom: this.titleFontSize / 10 + 'px'
       }
     },
     marginStyle () {
@@ -65,8 +63,24 @@ export default {
       }
     }
   },
+  watch: {
+    theme: {
+      handler (newVale) {
+        // 先销毁图表
+        this.chartInstance.dispose()
+        // 重新初始化图表
+        this.initChart(newVale)
+        this.updateData()
+        this.handlerResize()
+      }
+    }
+  },
+  created () {
+    // 注册回调函数
+    this.$socket.registerCallBack('trendData', this.getData)
+  },
   mounted () {
-    this.initChart()
+    this.initChart(this.theme)
     this.$socket.send({
       action: 'getData',
       socketType: 'trendData',
@@ -83,8 +97,8 @@ export default {
   },
   methods: {
     // 初始化
-    initChart () {
-      this.chartInstance = this.$echarts.init(this.$refs.trend, 'chalk')
+    initChart (theme) {
+      this.chartInstance = this.$echarts.init(this.$refs.trend, theme)
       const initOption = {
         xAxis: {
           type: 'category',
@@ -93,20 +107,19 @@ export default {
         yAxis: {
           type: 'value'
         },
+        tooltip: {
+          trigger: 'axis'
+        },
         grid: {
-          left: '3%',
-          right: '4%',
+          left: '5%',
+          right: '6%',
           top: '25%',
           bottom: '5%',
           containLabel: true
         },
-        tooltip: {
-          trigger: 'axis'
-        },
         legend: {
-          left: 20,
-          top: '13%',
-          icon: 'circle'
+          top: getConfig('legend').top,
+          icon: getConfig('legend').icon
         }
       }
       this.chartInstance.setOption(initOption)
@@ -134,11 +147,11 @@ export default {
             color: new this.$echarts.graphic.LinearGradient(0, 0, 0, 1, [
               {
                 offset: 0,
-                color: this.$store.state.config.colorArr1[index]
+                color: getConfig('colorArr1')[index]
               },
               {
                 offset: 1,
-                color: this.$store.state.config.colorArr2[index]
+                color: getConfig('colorArr2')[index]
               }
             ])
           }
@@ -158,14 +171,14 @@ export default {
     },
     // 分辨率适配
     handlerResize () {
-      this.titleFontSize = this.$refs.trend.offsetWidth / 100 * 3
+      this.titleFontSize = this.$refs.trend.offsetWidth / 100 * 3.6
       const adapterOption = {
         legend: {
           itemWidth: this.titleFontSize,
           itemHeight: this.titleFontSize,
-          itemGap: this.titleFontSize,
+          itemGap: this.titleFontSize / 2,
           textStyle: {
-            fontSize: this.titleFontSize / 2
+            fontSize: this.titleFontSize / 1.2
           }
         }
       }
@@ -182,22 +195,12 @@ export default {
 }
 </script>
 
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 .title {
   position: absolute;
   left: 20px;
-  top: 10px;
+  top: 20px;
   z-index: 10;
-  color: white;
-
-  .iconfont {
-    width: 10px;
-    height: 10px;
-    display: inline-block;
-    border-bottom: 2px solid white;
-    border-left: 2px solid white;
-    transform: rotate(-45deg);
-  }
 
   .title-icon {
     margin-left: 10px;

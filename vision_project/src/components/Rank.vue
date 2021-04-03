@@ -5,6 +5,9 @@
 </template>
 
 <script>
+import { getConfig } from '../utils/config_utils'
+import { mapState } from 'vuex'
+
 export default {
   name: 'Rank',
   data () {
@@ -16,11 +19,26 @@ export default {
       endValue: 9 // 区域缩放的终点值
     }
   },
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme: {
+      handler (newVale) {
+        // 先销毁图表
+        this.chartInstance.dispose()
+        // 重新初始化图表
+        this.initChart(newVale)
+        this.updateData()
+        this.handlerResize()
+      }
+    }
+  },
   created () {
     this.$socket.registerCallBack('rankData', this.getData)
   },
   mounted () {
-    this.initChart()
+    this.initChart(this.theme)
     this.$socket.send({
       action: 'getData',
       socketType: 'rankData',
@@ -36,20 +54,14 @@ export default {
     this.$socket.unRegisterCallBack('rankData')
   },
   methods: {
-    initChart () {
-      this.chartInstance = this.$echarts.init(this.$refs.rank, 'chalk')
+    // 初始化
+    initChart (theme) {
+      this.chartInstance = this.$echarts.init(this.$refs.rank, theme)
       const initOption = {
         title: {
-          text: this.$store.state.config.title.rankTitle,
-          left: 20,
-          top: 20
-        },
-        grid: {
-          top: '20%',
-          left: '5%',
-          right: '5%',
-          bottom: '5%',
-          containLabel: true
+          text: '▎地区销售排行',
+          left: getConfig('title').left,
+          top: getConfig('title').top
         },
         xAxis: {
           type: 'category'
@@ -62,6 +74,13 @@ export default {
         ],
         tooltip: {
           show: true
+        },
+        grid: {
+          top: '35%',
+          left: '5%',
+          right: '5%',
+          bottom: '5%',
+          containLabel: true
         }
       }
       this.chartInstance.setOption(initOption)
@@ -73,22 +92,20 @@ export default {
         this.startInterval()
       })
     },
+    // 获取数据
     getData (res) {
       res.sort((a, b) => {
         return b.value - a.value
       })
       this.data = res
-      this.updateChart()
+      this.updateData()
       this.startInterval()
     },
-    updateChart () {
+    // 更新数据
+    updateData () {
       const provinceArr = this.data.map(item => item.name)
       const valueArr = this.data.map(item => item.value)
-      const colorArr = [
-        ['#0BA82C', '#4FF778'],
-        ['#2E72BF', '#23E5E5'],
-        ['#5052EE', '#AB6EE5']
-      ]
+      const colorArr = getConfig('colorArr3')
       const dataOption = {
         xAxis: {
           data: provinceArr
@@ -128,6 +145,7 @@ export default {
       }
       this.chartInstance.setOption(dataOption)
     },
+    // 分辨率适配
     handlerResize () {
       const titleFontSize = this.$refs.rank.offsetWidth / 100 * 3.6
       const adapterOption = {
@@ -148,6 +166,7 @@ export default {
       this.chartInstance.setOption(adapterOption)
       this.chartInstance.resize()
     },
+    // 循环显示
     startInterval () {
       this.timer = setInterval(() => {
         this.startValue++
@@ -168,4 +187,4 @@ export default {
 }
 </script>
 
-<style lang='less' scoped></style>
+<style lang="scss" scoped></style>

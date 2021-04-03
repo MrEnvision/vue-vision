@@ -5,6 +5,9 @@
 </template>
 
 <script>
+import { getConfig } from '../utils/config_utils'
+import { mapState } from 'vuex'
+
 export default {
   name: 'Stock',
   data () {
@@ -15,11 +18,26 @@ export default {
       timer: null
     }
   },
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme: {
+      handler (newVale) {
+        // 先销毁图表
+        this.chartInstance.dispose()
+        // 重新初始化图表
+        this.initChart(newVale)
+        this.updateData()
+        this.handlerResize()
+      }
+    }
+  },
   created () {
     this.$socket.registerCallBack('stockData', this.getData)
   },
   mounted () {
-    this.initChart()
+    this.initChart(this.theme)
     this.$socket.send({
       action: 'getData',
       socketType: 'stockData',
@@ -35,13 +53,13 @@ export default {
   },
   methods: {
     // 初始化
-    initChart () {
-      this.chartInstance = this.$echarts.init(this.$refs.stock, 'chalk')
+    initChart (theme) {
+      this.chartInstance = this.$echarts.init(this.$refs.stock, theme)
       const initOption = {
         title: {
-          text: this.$store.state.config.title.stockTitle,
-          left: 20,
-          top: 20
+          text: '▎库存和销量分析',
+          left: getConfig('title').left,
+          top: getConfig('title').top
         }
       }
       this.chartInstance.setOption(initOption)
@@ -61,31 +79,16 @@ export default {
     },
     // 更新数据
     updateData () {
-      const centerArr = [
-        ['18%', '40%'],
-        ['50%', '40%'],
-        ['82%', '40%'],
-        ['34%', '75%'],
-        ['66%', '75%']
-      ]
-      const colorArr = [
-        ['#4FF778', '#0BA82C'],
-        ['#E5DD45', '#E8B11C'],
-        ['#E8821C', '#E55445'],
-        ['#5052EE', '#AB6EE5'],
-        ['#23E5E5', '#2E72BF']
-      ]
+      const colorArr = getConfig('colorArr4')
       const start = this.currentIndex * 5
       const end = (this.currentIndex + 1) * 5
       const showData = this.data.slice(start, end)
       const seriesArr = showData.map((item, index) => {
         return {
           type: 'pie',
-          radius: [110, 100],
-          center: centerArr[index],
+          center: getConfig('centerArr')[index],
           hoverAnimation: false, // 关闭鼠标移入到饼图时的动画效果
-          // 关闭防止标签重叠策略
-          avoidLabelOverlap: false,
+          avoidLabelOverlap: false, // 关闭防止标签重叠策略
           labelLine: {
             show: false // 隐藏指示线
           },
@@ -141,14 +144,14 @@ export default {
             type: 'pie',
             radius: [outerRadius, innerRadius],
             label: {
-              fontSize: titleFontSize / 2
+              fontSize: titleFontSize / 1.5
             }
           },
           {
             type: 'pie',
             radius: [outerRadius, innerRadius],
             label: {
-              fontSize: titleFontSize / 2
+              fontSize: titleFontSize / 1.5
             }
           },
           {
@@ -177,12 +180,7 @@ export default {
       this.chartInstance.setOption(adapterOption)
       this.chartInstance.resize()
     },
-    // 切换
-    handleSelect (currentType) {
-      this.choiceType = currentType
-      this.updateData()
-      this.showChoice = false
-    },
+    // 循环显示
     startInterval () {
       if (this.timer) {
         clearInterval(this.timer)
@@ -199,4 +197,4 @@ export default {
 }
 </script>
 
-<style lang='less' scoped></style>
+<style lang="scss" scoped></style>

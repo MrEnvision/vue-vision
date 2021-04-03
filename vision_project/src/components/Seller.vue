@@ -5,6 +5,9 @@
 </template>
 
 <script>
+import { getConfig } from '../utils/config_utils'
+import { mapState } from 'vuex'
+
 export default {
   name: 'Seller',
   data () {
@@ -16,11 +19,26 @@ export default {
       timer: null
     }
   },
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme: {
+      handler (newVale) {
+        // 先销毁图表
+        this.chartInstance.dispose()
+        // 重新初始化图表
+        this.initChart(newVale)
+        this.updateData()
+        this.handlerResize()
+      }
+    }
+  },
   created () {
     this.$socket.registerCallBack('sellerData', this.getData)
   },
   mounted () {
-    this.initChart()
+    this.initChart(this.theme)
     this.$socket.send({
       action: 'getData',
       socketType: 'sellerData',
@@ -31,33 +49,33 @@ export default {
     this.handlerResize() // 在页面加载完成的时候, 主动进行屏幕的适配
   },
   destroyed () {
-    clearInterval(this.timer)
     window.removeEventListener('resize', this.handlerResize)
+    clearInterval(this.timer)
     this.$socket.unRegisterCallBack('sellerData')
   },
   methods: {
-    // 初始化Echarts实例对象
-    initChart () {
-      this.chartInstance = this.$echarts.init(this.$refs.seller, 'chalk')
+    // 初始化
+    initChart (theme) {
+      this.chartInstance = this.$echarts.init(this.$refs.seller, theme)
       // 初始化配置
       const initOption = {
         title: {
-          text: this.$store.state.config.title.sellerTitle,
-          left: 20,
-          top: 20
-        },
-        grid: {
-          top: '15%',
-          left: '3%',
-          right: '6%',
-          bottom: '5%',
-          containLabel: true // 距离是包含坐标轴上的文字
+          text: '▎商家销售量统计',
+          left: getConfig('title').left,
+          top: getConfig('title').top
         },
         xAxis: {
           type: 'value'
         },
         yAxis: {
           type: 'category'
+        },
+        grid: {
+          top: '30%',
+          left: '3%',
+          right: '5%',
+          bottom: '5%',
+          containLabel: true // 距离是包含坐标轴上的文字
         },
         tooltip: {
           trigger: 'axis',
@@ -128,17 +146,9 @@ export default {
       }
       this.chartInstance.setOption(dataOption)
     },
-    // 动态刷新
-    startInterval () {
-      this.timer = setInterval(() => {
-        this.currentPage = this.currentPage + 1 <= this.totalPage ? this.currentPage + 1 : 1
-        this.updateData()
-      }, 2000)
-    },
     // 分辨率适配
     handlerResize () {
-      const width = this.$refs.seller.offsetWidth
-      const titleFontSize = width / 100 * 3.6
+      const titleFontSize = this.$refs.seller.offsetWidth / 100 * 3.6
       const adapterOption = {
         title: {
           textStyle: {
@@ -163,6 +173,13 @@ export default {
       }
       this.chartInstance.setOption(adapterOption)
       this.chartInstance.resize()
+    },
+    // 循环显示
+    startInterval () {
+      this.timer = setInterval(() => {
+        this.currentPage = this.currentPage + 1 <= this.totalPage ? this.currentPage + 1 : 1
+        this.updateData()
+      }, 2000)
     }
   }
 }

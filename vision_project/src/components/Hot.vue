@@ -1,13 +1,17 @@
 <template>
   <div class="com-container">
     <div ref="hot" class="com-chart"></div>
-    <span class="iconfont arr-left" @click="toLeft" :style="comStyle2"></span>
-    <span class="iconfont arr-right" @click="toRight" :style="comStyle2"></span>
-    <span class="cat-name" :style="comStyle">{{ catName }}</span>
+    <span class="iconfont arr-left" @click="toLeft" :style="[doubleFontStyle, colorStyle]">&#xe6eb;</span>
+    <span class="iconfont arr-right" @click="toRight" :style="[doubleFontStyle, colorStyle]">&#xe6ee;</span>
+    <span class="cat-name" :style="[fontStyle, colorStyle]">{{ catName }}</span>
   </div>
 </template>
 
 <script>
+import { getThemeValue } from '../utils/theme_util'
+import { getConfig } from '../utils/config_utils'
+import { mapState } from 'vuex'
+
 export default {
   name: 'Hot',
   data () {
@@ -19,23 +23,35 @@ export default {
     }
   },
   computed: {
-    comStyle () {
+    ...mapState(['theme']),
+    fontStyle () {
       return {
         fontSize: this.titleFontSize + 'px'
       }
     },
-    comStyle2 () {
+    doubleFontStyle () {
       return {
-        fontSize: this.titleFontSize + 'px',
-        width: this.titleFontSize + 'px',
-        height: this.titleFontSize + 'px'
+        fontSize: this.titleFontSize * 2 + 'px'
+      }
+    },
+    colorStyle () {
+      return {
+        color: getThemeValue(this.theme).titleColor
       }
     },
     catName () {
-      if (!this.data) {
-        return ''
-      } else {
-        return this.data[this.currentIndex].name
+      return this.data ? this.data[this.currentIndex].name : ''
+    }
+  },
+  watch: {
+    theme: {
+      handler (newVale) {
+        // 先销毁图表
+        this.chartInstance.dispose()
+        // 重新初始化图表
+        this.initChart(newVale)
+        this.updateData()
+        this.handlerResize()
       }
     }
   },
@@ -43,7 +59,7 @@ export default {
     this.$socket.registerCallBack('hotData', this.getData)
   },
   mounted () {
-    this.initChart()
+    this.initChart(this.theme)
     this.$socket.send({
       action: 'getData',
       socketType: 'hotData',
@@ -59,17 +75,17 @@ export default {
   },
   methods: {
     // 初始化
-    initChart () {
-      this.chartInstance = this.$echarts.init(this.$refs.hot, 'chalk')
+    initChart (theme) {
+      this.chartInstance = this.$echarts.init(this.$refs.hot, theme)
       const initOption = {
         title: {
-          text: this.$store.state.config.title.hotTitle,
-          left: 20,
-          top: 20
+          text: '▎热销商品占比',
+          left: getConfig('title').left,
+          top: getConfig('title').top
         },
         legend: {
-          top: '15%',
-          icon: 'circle'
+          top: getConfig('legend').top,
+          icon: getConfig('legend').icon
         },
         tooltip: {
           show: true,
@@ -93,9 +109,9 @@ export default {
         series: [
           {
             type: 'pie',
-            label: {
-              show: false
-            },
+            // label: {
+            //   show: false
+            // },
             emphasis: {
               label: {
                 show: true
@@ -136,7 +152,7 @@ export default {
     },
     // 分辨率适配
     handlerResize () {
-      this.titleFontSize = this.$refs.hot.offsetWidth / 100 * 3
+      this.titleFontSize = this.$refs.hot.offsetWidth / 100 * 3.6
       const adapterOption = {
         title: {
           textStyle: {
@@ -148,25 +164,25 @@ export default {
           itemHeight: this.titleFontSize,
           itemGap: this.titleFontSize / 2,
           textStyle: {
-            fontSize: this.titleFontSize / 2
+            fontSize: this.titleFontSize / 1.2
           }
         },
         series: [
           {
-            radius: this.titleFontSize * 5.5,
-            center: ['50%', '55%']
+            radius: this.titleFontSize * 4.5,
+            center: ['50%', '60%'],
+            label: {
+              textStyle: {
+                fontSize: this.titleFontSize / 1.5
+              }
+            }
           }
         ]
       }
       this.chartInstance.setOption(adapterOption)
       this.chartInstance.resize()
     },
-    // 切换
-    handleSelect (currentType) {
-      this.choiceType = currentType
-      this.updateData()
-      this.showChoice = false
-    },
+    // 左切换
     toLeft () {
       this.currentIndex--
       if (this.currentIndex < 0) {
@@ -174,6 +190,7 @@ export default {
       }
       this.updateData()
     },
+    // 右切换
     toRight () {
       this.currentIndex++
       if (this.currentIndex > this.data.length - 1) {
@@ -185,25 +202,19 @@ export default {
 }
 </script>
 
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 .iconfont {
-  color: #FFF;
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
   cursor: pointer;
-  border-left: 2px solid #fff;
-  border-bottom: 2px solid #fff;
 }
 
 .arr-left {
   left: 10%;
-  transform: rotate(45deg);
 }
 
 .arr-right {
   right: 10%;
-  transform: rotate(-135deg);
 }
 
 .cat-name {
