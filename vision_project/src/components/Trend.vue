@@ -3,8 +3,8 @@
     <div class="title" :style="[fontStyle, colorStyle]">
       <span style="margin-bottom: 5px;display: inline-block">{{ '▎' + showTitle + ' ' }}</span>
       <span class="iconfont title-icon" :style="[fontStyle]" @click="showChoice = !showChoice">&#xe6eb;</span>
-      <div class="select-con" v-show="showChoice" :style="[marginStyle]">
-        <div class="select-item" v-for="item in selectTypes" :key="item.key" @click="handleSelect(item.key)">
+      <div v-show="showChoice" :style="[bgStyle]">
+        <div class="select-item" :style="[paddingStyle]" v-for="item in selectTypes" :key="item.key" @click="handleSelect(item.key)">
           {{ item.text }}
         </div>
       </div>
@@ -50,6 +50,11 @@ export default {
         color: getThemeValue(this.theme).titleColor
       }
     },
+    bgStyle () {
+      return {
+        backgroundColor: getThemeValue(this.theme).backgroundColor2
+      }
+    },
     showTitle () {
       if (!this.data) {
         return ''
@@ -57,9 +62,9 @@ export default {
         return this.data[this.choiceType].title
       }
     },
-    marginStyle () {
+    paddingStyle () {
       return {
-        marginLeft: this.titleFontSize + 'px'
+        paddingLeft: this.titleFontSize + 'px'
       }
     }
   },
@@ -201,6 +206,7 @@ export default {
   left: 20px;
   top: 20px;
   z-index: 10;
+  font-weight: 500;
 
   .title-icon {
     margin-left: 10px;
@@ -209,11 +215,10 @@ export default {
 
   .select-item {
     cursor: pointer;
-    padding: 5px 0 5px 0;
-  }
-
-  .select-con {
-    background-color: #222733;
+    padding-top: 5px;
+    padding-right: 0;
+    padding-bottom: 5px;
+    font-weight: 500;
   }
 }
 </style>

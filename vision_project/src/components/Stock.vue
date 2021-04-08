@@ -117,7 +117,7 @@ export default {
             {
               value: item.stock,
               itemStyle: {
-                color: '#333843'
+                color: this.theme === 'chalk' ? '#333843' : '#bbb'
               }
             }
           ]

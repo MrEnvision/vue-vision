@@ -70,7 +70,7 @@ export default {
             top: '5%',
             bottom: '5%',
             itemStyle: {
-              areaColor: '#19548b',
+              areaColor: '#2E72Bf',
               borderColor: '#333'
             }
           },

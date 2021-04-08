@@ -8,6 +8,12 @@
 
 
 
+<img src="./note/img/thumb1.png" style="zoom:50%;" />
+
+<img src="./note/img/thumb2.png" style="zoom:50%;" />
+
+
+
 # 项目启动
 
 ## 1. 后端项目

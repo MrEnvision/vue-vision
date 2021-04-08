@@ -2,6 +2,7 @@ const theme = {
   chalk: {
     // 背景颜色
     backgroundColor: '#161522',
+    backgroundColor2: 'rgb(34 40 51)',
     // 标题的文字颜色
     titleColor: '#ffffff',
     // 切换主题按钮的图片路径
@@ -13,6 +14,7 @@ const theme = {
   vintage: {
     // 背景颜色
     backgroundColor: '#eeeeee',
+    backgroundColor2: '#fff',
     // 标题的文字颜色
     titleColor: '#000000',
     // 切换主题按钮的图片路径
