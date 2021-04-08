@@ -35,10 +35,11 @@
       <section class="screen-middle">
         <div id="middle-top" :class="[fullScreenStatus.map ? 'fullscreen' : '']">
           <!-- 商家分布图表 -->
-          <Map ref="map"></Map>
+<!--          <Map ref="map"></Map>-->
+          <Map2 ref="map2"></Map2>
           <div class="resize">
             <!-- icon-compress-alt -->
-            <span @click="changeSize('map')" :class="['iconfont', fullScreenStatus.map ? 'icon-compress-alt' : 'icon-expand-alt']"></span>
+            <span @click="changeSize('map2')" :class="['iconfont', fullScreenStatus.map ? 'icon-compress-alt' : 'icon-expand-alt']"></span>
           </div>
         </div>
         <div id="middle-bottom" :class="[fullScreenStatus.rank ? 'fullscreen' : '']">
@@ -74,7 +75,8 @@
 
 <script>
 import Hot from '../components/Hot'
-import Map from '../components/Map'
+// import Map from '../components/Map'
+import Map2 from '../components/Map2'
 import Rank from '../components/Rank'
 import Seller from '../components/Seller'
 import Stock from '../components/Stock'
@@ -92,7 +94,8 @@ export default {
   name: 'ScreenPage',
   components: {
     Hot,
-    Map,
+    // Map,
+    Map2,
     Rank,
     Seller,
     Stock,
