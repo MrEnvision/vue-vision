@@ -1,12 +1,12 @@
-# 数据可视化项目-电商平台数据监控
+# 数据可视化-电商平台数据监控
 
-> 本项目为电商平台数据可视化简易学习项目，教程详见[电商平台数据可视化实时监控系统学习项目](https://www.bilibili.com/video/BV1bh41197p8)。本项目分为[前端部分](./vision_project)和[后端部分](./koa_serve)，其中前端技术栈为Echarts+VUE，后端技术栈为Koa。
-
-
-
-**注意 ⚠️ Echarts相关笔记详见 —— [Echart_Note](./note/echarts_note.md)**
+> 本项目为电商平台数据可视化简易学习项目，教程详见[电商平台数据可视化实时监控系统学习项目](https://www.bilibili.com/video/BV1bh41197p8)。本项目分为[前端部分](./vision_project)和[后端部分](./koa_serve)，其中前端技术栈为VUE2.0 + Echarts，后端技术栈为Koa。
+>
+> TIP：更多内容详见[数据可视化专题](https://github.com/MrEnvision/data-vision)！！！
 
 
+
+## 预览
 
 <img src="./note/img/thumb1.png" style="zoom:50%;" />
 
@@ -14,9 +14,9 @@
 
 
 
-# 项目启动
+## 项目启动
 
-## 1. 后端项目
+### 1. 后端项目
 
 ```shell
 cd koa_serve
@@ -24,7 +24,7 @@ npm install
 node app.js
 ```
 
-## 2. 前端项目
+### 2. 前端项目
 
 ```shell
 cd vision_project
@@ -34,9 +34,9 @@ npm run serve
 
 
 
-# 后端开发
+## 后端开发
 
-## 1. KOA2介绍
+### 1. KOA2介绍
 
 > KOA2是基于 Node.js 平台的Web服务器框架，通过 `npm i koa` 安装。
 
@@ -49,7 +49,7 @@ npm run serve
 
 洋葱模型中间件的调用顺序为第一层->第二层->第三层->第三层->第二层->第一层，非常类似于冒泡的行为，请求最先到达第一层中 间件，而最后也是第一层中间件对请求再次处理了一下
 
-## 2. KOA2中间件
+### 2. KOA2中间件
 
 - Koa2 的实例对象通过 use 方法加入一个中间件
 - 一个中间件就是一个函数,这个函数具备两个参数,分别是 ctx 和 next
@@ -96,7 +96,7 @@ app.use(async (ctx, next) => {
 // 注意上述结果会出现两次，这是因为浏览器会自动请求一次图标啥的，此处无需关注。
 ```
 
-## 3. KOA2快速上手
+### 3. KOA2快速上手
 
 步骤：
 
@@ -125,7 +125,7 @@ app.listen(3000)
 - 启动服务器 —— `node app.js`
 - 在指定端口查看即可 —— `127.0.0.1:3000`
 
-## 4. 后端项目开发
+### 4. 后端项目开发
 
 开发目标：三个中间件
 
@@ -226,9 +226,9 @@ DELETE")
 
 
 
-# 前端开发
+## 前端开发
 
-## 1. 全局挂载Echarts
+### 1. 全局挂载Echarts
 
 - 安装echarts `npm i echarts -S`
 - 在 `src/main.js` 文件中引入并将其挂载到 Vue 的原型对象上
@@ -242,7 +242,7 @@ Vue.prototype.$echarts = echarts
 
 - 在别的组件中直接通过`this.$echarts`即可使用
 
-## 2. 组件开发流程
+### 2. 组件开发流程
 
 - 组件结构的设计
   - A组件为针对路由路径而显示的文件，其中引入了B组件
@@ -378,11 +378,11 @@ export default {
 <style lang='less' scoped></style>
 ```
 
-# WebSocket引入
+## WebSocket引入
 
 > 可以保持着浏览器和客户端之间的长连接， 通过 可以实现数据由后端推送到前 端，保证了数据传输的实时性.  **非常重要！！！**
 
-## 1. 基本流程
+### 1. 基本流程
 
 - 安装 WebSocket 包 —— `npm i ws -S`
 - 创建 WebSocket 实例对象
@@ -418,13 +418,13 @@ ws.onclose = e => {
 } 
 ```
 
-## 2. 后端koa项目改造
+### 2. 后端koa项目改造
 
 略，详见代码。
 
-## 3. 前端 Vue项目改造
+### 3. 前端 Vue项目改造
 
-### 3.1 创建 socket_service.js 文件
+#### 3.1 创建 socket_service.js 文件
 
 基础流程：
 
@@ -539,9 +539,15 @@ export default class SocketService {
 }
 ```
 
-### 3.2 组件改造
+#### 3.2 组件改造
 
 - created - 注册回调函数
 - destoryed - 取消回调函数
 - 原本获取数据地方改为websocket发送数据
+
+
+
+------
+
+如果发现本项目有错误，欢迎提交 issues 指正，也可联系邮箱[EnvisionShen@gmail.com](mailto:EnvisionShen@gmail.com)。
 
